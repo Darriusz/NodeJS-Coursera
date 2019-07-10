@@ -3,32 +3,53 @@ const bodyParser = require('body-parser');
 
 const promoRouter = express.Router();
 promoRouter.use(bodyParser.json());
+const mongoose = require('mongoose');
+const Promotions = require('../models/promotions');
+
 
 promoRouter.route('/')
-.all((req, res, next) => {
-	res.statusCode = 200;
-	res.setHeader('Content-Type', 'text/plain');
-	next(); 
-})
 .get((req, res, next) => {
-	res.end('Later on it will retrieve json data from a MongoDB here');
+	Promotions.find({})
+	.then((promotions) => {
+		res.statusCode=200;
+		res.setHeader('Content-Type', 'application/json');
+		res.json(promotions);
+	}, (err) => next(err))
+	.catch((err) => next(err));
 })
 .post((req, res, next) => {
-	res.end('When integrated with MongoDB it will add the promo name: ' + req.body.name + 
-		' with the details: ' + req.body.description);
+	Promotions.create(req.body)
+	.then((promotion) => {
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'application/json')
+		res.json(promotion);
+	}, (err) => next(err))
+	.catch((err) => next(err));
 })
 .put((req, res, next) => {
 	res.statusCode = 403;
-	res.end('PUT operation arbitrarily not supported on promotions');
+	res.end('PUT operation not supported on the whole list of promotions');
 })
 .delete((req, res, next) => {
-	res.end('Deleting all the promotions when integrated with MongoDB!!!');
+	Promotions.deleteMany({})
+	.then ((resp) => {
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'application/json');
+		res.json(resp);
+	}, (err) => next(err))
+	.catch((err) => next(err));
 });
 
 
 promoRouter.route('/:promoId')
 .get((req, res, next) => {
-	res.end('When integrated with MongoDB it will give details of the promo:' + req.params.promoId + ' to you');
+	Promotions.findById(req.params.promoId)
+	.then((promotion) => {
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'application/json');
+		res.json(promotion);
+	}, (err) => nest(err))
+	.catch((err) =>next(err));
 })
 .post((req, res, next) => {
 	res.statusCode = 403;
@@ -36,11 +57,23 @@ promoRouter.route('/:promoId')
 })
 .put((req, res, next) => {
 	res.write('Updating the promotion: ' + req.params.promoId + "\n");
-	res.end('When integrated with MongoDB it will update the promo called: ' + req.body.name + 
-		' with the following details: ' + req.body.description);
+	Promotions.findByIdAndUpdate(req.params.promoId, {
+		$set: req.body}, {new: true})
+	.then((promotion)=>{
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'application/json');
+		res.json(promotion);
+	},(err)=>next(err))
+	.catch((err)=>next(err));
 })
 .delete((req, res, next) => {
-	res.end('When integrated with MongoDB it will delete promotion: ' + req.params.promoId);
+	Promotions.findByIdAndDelete(req.params.promoId)
+	.then((resp) =>{
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'application/json');
+		res.json(resp);
+	}, (err) => next(err))
+	.catch((err) => next(err));
 });
 
 
