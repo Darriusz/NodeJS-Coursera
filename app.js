@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session'); //this and the next for sessions; needs importing both in the server folder
 var FileStore = require('session-file-store')(session);
+var passport = require('passport');
+var authenticate = require('./authenticate');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -80,6 +82,43 @@ app.use(express.urlencoded({ extended: false }));
 // app.use(auth); //authentication BEFORE client gets an access further below
 
 
+//***********sessions without passport************
+// app.use(session({
+//   name: 'session-id',
+//   secret: '12345-67890-09876-54321',
+//   saveUninitialized: false,
+//   resave: false,
+//   store: new FileStore()
+// }));
+
+// app.use('/', indexRouter);
+// app.use('/users', usersRouter);
+
+// function auth(req, res, next) {
+//   console.log(req.session);
+
+//   if (!req.session.user) {
+//     var err = new Error('You are not authenticated');
+//     err.status = 401;
+//     return next(err);
+//   }
+//   else {
+//     if (req.session.user === 'authenticated')  { //it's set to this value during logging-in in the router users.js (line 68)
+//       next();
+//     }
+//     else {
+//       var err = new Error('You are not authenticated');
+//       err.status = 403;
+//       return next(err);       
+//     }
+//   }
+// }
+
+// app.use(auth);
+
+
+
+//********** with passport ************
 app.use(session({
   name: 'session-id',
   secret: '12345-67890-09876-54321',
@@ -88,26 +127,21 @@ app.use(session({
   store: new FileStore()
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 function auth(req, res, next) {
   console.log(req.session);
-
-  if (!req.session.user) {
+  if (!req.user) {
     var err = new Error('You are not authenticated');
-    err.status = 401;
+    err.status = 403;
     return next(err);
   }
   else {
-    if (req.session.user === 'authenticated')  { //it's set to this value during logging-in in the router users.js (line 68)
-      next();
-    }
-    else {
-      var err = new Error('You are not authenticated');
-      err.status = 403;
-      return next(err);       
-    }
+    next();
   }
 }
 
