@@ -2,6 +2,7 @@ var express = require('express');
 const bodyParser = require('body-parser');
 var User = require('../models/user');
 var passport = require('passport');
+var authenticate =  require('../authenticate'); //needed for JWT tokens
 
 var router = express.Router();
 router.use(bodyParser.json());
@@ -31,12 +32,23 @@ router.post('/signup', (req, res, next) => {
 });
 
 
-//********** logging in endpoint *************
+//********** logging in endpoint with sessions (without token)  *************
+// router.post('/login', passport.authenticate('local'), (req, res) => {
+// 	res.statusCode=200;
+// 	res.setHeader('Content-Type', 'application/json');
+// 	res.json({sucess: true, status: 'You are logged in'});
+// });
+
+
+//********** logging in endpoint with token (without sessions)  *************
 router.post('/login', passport.authenticate('local'), (req, res) => {
+
+	var token = authenticate.getToken({_id: req.user._id}); //creating of a token for an authenticated user
 	res.statusCode=200;
 	res.setHeader('Content-Type', 'application/json');
-	res.json({sucess: true, status: 'You are logged in'});
+	res.json({sucess: true, token: token, status: 'You are logged in'});
 });
+
 
 
 //************* logging out endpoint ****************
