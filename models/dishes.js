@@ -15,9 +15,16 @@ const commentSchema = new Schema({
 		required: true
 	},
 	author:{
-		type: String,
-		required: true
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'User'
 	}
+
+// author property used to be the following without populate
+// 	author:{
+// 		type: String,
+// 		required: true
+// 	}
+
 },{
 	timestamps: true
 });
