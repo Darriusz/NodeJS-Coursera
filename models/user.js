@@ -36,7 +36,7 @@ var User = new Schema({
 	},		
 	admin: {
 		type: Boolean,
-		default: false
+		default: false  //to have an user with admin privileges you need to update this flag to "true" directly in the database, not through an API
 	}
 });
 
