@@ -37,3 +37,19 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
 	}));
 
 exports.verifyUser = passport.authenticate('jwt', {session: false}); //we are using JWT, not sessions, therefore "false"
+
+exports.verifyAdmin = function (req, res, next) {
+	if (req.user.admin === true)
+		next();
+	else {
+		res.statusCode = 403;
+		res.end('This operation requires elevated privileges.');
+	}
+}
+
+// alternative "else" with error declaration
+// else {
+//         let err = new Error('You are not authorized to perform this operation!');
+//         err.status = 403;
+//         next(err);
+//     }
