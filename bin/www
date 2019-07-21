@@ -7,6 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('confusionserver:server');
 var http = require('http');
+var https = require('https');
+var fs = require('fs');
 
 /**
  * Get port from environment and store in Express.
@@ -14,12 +16,13 @@ var http = require('http');
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
+app.set('secPort', port+443); //normally production http server uses port 80, and https uses 443
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server = http.createServer(app); //this server is retained along https. when a request comes to port 80 for it, it will be redirected
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -28,6 +31,22 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+
+//key and cer for secureServer need to be obtained: bought for production; taken as open from open sources (like www.selfsignedcertificate.com/) for development
+var options = {
+  key: fs.readFileSync(__dirname+'/30337603_www.example.com.key'), //read synchroously: the file will be read before further action
+  cert: fs.readFileSync(__dirname+'/30337603_www.example.com.cert')  
+};
+
+var secureServer = https.createServer(options, app);
+
+secureServer.listen(app.get('secPort'), () => {
+  console.log('Secure server listening on port: ' + app.get('secPort'));
+});
+
+secureServer.on('error', onError);
+secureServer.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.

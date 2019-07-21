@@ -1,0 +1,1 @@
+key i cert prowizoryczne (self-signed) ze strony http://www.selfsignedcertificate.com/

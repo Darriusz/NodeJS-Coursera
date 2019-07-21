@@ -29,6 +29,17 @@ connect.then((db) =>{
 
 var app = express();
 
+app.all('*', (req,res,next) => { //redirecting all (*) traffic to https server
+  if (req.secure) {
+    return next();
+  }
+  else {
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') +  req.url); //url is the path that comes after localhost:3443/
+  }
+});
+
+
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
