@@ -3,12 +3,13 @@ const bodyParser = require('body-parser');
 var User = require('../models/user');
 var passport = require('passport');
 var authenticate =  require('../authenticate'); //needed for JWT tokens
+var cors = require('./cors');
 
 var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
-router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
 	User.find({})
 	.then((users) => {
 		res.statusCode=200;
@@ -19,7 +20,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, ne
 });
 
 //************* sign-up of a new user endpoint ****************
-router.post('/signup', (req, res, next) => {
+router.post('/signup', cors.corsWithOptions, (req, res, next) => {
 	User.register(new User({username: req.body.username}), 
 		req.body.password, (err, user) =>{
 		if(err) {
@@ -60,7 +61,7 @@ router.post('/signup', (req, res, next) => {
 
 
 //********** logging in endpoint with token (without sessions)  *************
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
 
 	var token = authenticate.getToken({_id: req.user._id}); //creating of a token for an authenticated user
 	res.statusCode=200;
@@ -71,7 +72,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 
 
 //************* logging out endpoint ****************
-router.get('/logout', (req, res) => { //method GET as the user doesn't supply any new info anout himsef (is already logged in and recongnised by the server)
+router.get('/logout', cors.corsWithOptions, (req, res) => { //method GET as the user doesn't supply any new info anout himsef (is already logged in and recongnised by the server)
 	if (req.session) { //if the session exists (otherwise can't log out)
 		req.session.destroy(); //end the session and removes all cookies from server site
 		res.clearCookie('session-id'); //asking the user to delete the cookie on his part, so he can't start a new session without logging in
